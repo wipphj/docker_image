@@ -7,7 +7,8 @@ on:
     paths:
       - 'mkdocs/**'
       - '.github/workflows/build-mkdocs.yml' # 加上配置文件本身，改配置也能触发
-
+  workflow_dispatch:
+  
 env:
   REGISTRY: ghcr.io
   # 🟢 独立的镜像名：比如 ghcr.io/用户名/my-alpha
