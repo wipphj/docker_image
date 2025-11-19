@@ -4,3 +4,4 @@ FROM squidfunk/mkdocs-material:latest
 # 2. --upgrade: 顺手确保 pip 本身是最新的（可选）
 RUN pip install --no-cache-dir \
     mkdocs-awesome-nav
+    mkdocs-literate-nav
