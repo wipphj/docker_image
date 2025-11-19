@@ -2,7 +2,7 @@ name: Build mkdocs
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "build" ]
     # 🟢 核心技巧：只有当这个文件夹变动时，才运行此构建
     paths:
       - 'mkdocs/**'
