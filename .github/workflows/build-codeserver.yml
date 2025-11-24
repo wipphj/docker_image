@@ -1,0 +1,48 @@
+name: Build code-server
+
+on:
+  push:
+    branches: [ "build" ]
+    # 🟢 核心技巧：只有当这个文件夹变动时，才运行此构建
+    paths:
+      - 'code-server/**'
+      - '.github/workflows/build-codeserver.yml' # 加上配置文件本身，改配置也能触发
+  workflow_dispatch:
+  
+env:
+  REGISTRY: ghcr.io
+  # 🟢 独立的镜像名：比如 ghcr.io/用户名/my-alpha
+  IMAGE_NAME: ${{ github.repository_owner }}/codeserver
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: type=raw,value=latest
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          # 🟢 关键：指定构建上下文为 mkdocs 目录
+          context: ./code-server
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
