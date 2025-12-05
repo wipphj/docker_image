@@ -1,0 +1,26 @@
+services:
+  cups:
+    image: hp1020-bullseye:latest  #使用刚才构建好的镜像名
+    container_name: cups
+    restart: always
+    # 关键：特权模式
+    privileged: true
+    # 关键：主机网络模式
+    network_mode: "host"
+    volumes:
+      # 映射 USB 设备
+      - /dev/bus/usb:/dev/bus/usb
+      - /dev/usb:/dev/usb
+      # 映射时区
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      # 持久化配置 (重启后不用重新添加打印机)
+      - cups_config:/etc/cups
+      # 4. 【新增关键行】映射 DBus
+      # 让容器内的 CUPS 能通过宿主机的 Avahi 发送广播
+      - /var/run/dbus:/var/run/dbus
+      - /home/xxx/cups/logs:/var/log/cups
+              
+# 定义数据卷
+volumes:
+  cups_config:
