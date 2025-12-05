@@ -9,7 +9,7 @@ log() {
 
 FIRMWARE_FILE="/usr/share/foo2zjs/firmware/sihp1020.dl"
 LOCK_FILE="/tmp/hp1020_fw_loaded"
-PRINTER_NAME="HP_LaserJet_1020_11"
+PRINTER_NAME="HP_LaserJet_1020_11" #添加打印机队列的名称，需要修改
 
 # 心跳设置：3600秒 = 1小时
 HEARTBEAT_INTERVAL=3600
