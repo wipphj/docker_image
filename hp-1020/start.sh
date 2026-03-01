@@ -9,7 +9,7 @@ log() {
 
 FIRMWARE_FILE="/usr/share/foo2zjs/firmware/sihp1020.dl"
 LOCK_FILE="/tmp/hp1020_fw_loaded"
-PRINTER_NAME="HP_LaserJet_1020_11" #添加打印机队列的名称，需要修改
+PRINTER_NAME="HP_LaserJet_1020_11"
 
 # 心跳设置：3600秒 = 1小时
 HEARTBEAT_INTERVAL=3600
@@ -96,19 +96,20 @@ while true; do
             # 等待 2 秒，确保 /dev/usb/lp* 设备节点已由内核生成
             sleep 2
             
+            log "DEBUG: List of /dev/usb/lp*: $(ls -l /dev/usb/lp* 2>&1)"
+            
             success=false
             
             # 遍历所有可能的 lp 设备，防止设备名从 lp0 变成 lp1
             for dev in /dev/usb/lp*; do
                 if [ -e "$dev" ]; then
-                    # === 关键修复：检查 cat 命令返回值 ===
-                    # 只有写入成功，才认为固件加载完毕
-                    if cat "$FIRMWARE_FILE" > "$dev" 2>/dev/null; then
+                    ERR_OUT=$(cat "$FIRMWARE_FILE" > "$dev" 2>&1)
+                    if [ $? -eq 0 ]; then
                         log "SUCCESS: Firmware sent to $dev"
                         success=true
-                        break # 成功一个就退出循环
+                        break
                     else
-                        log "WARNING: Failed to write to $dev (Device busy or stale handle?)"
+                        log "DEBUG: Failed to write to $dev. Error: $ERR_OUT"
                     fi
                 fi
             done
