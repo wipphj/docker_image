@@ -2,29 +2,25 @@ FROM oven/bun:alpine AS bun-source
 
 FROM almir/webhook:latest
 
-# 1. 临时提权为 root 执行系统包安装
 USER root
 
-# 2. 拷贝 Bun 二进制并赋予所有用户可执行权限
-COPY --from=bun-source /usr/local/bin/bun /usr/local/bin/bun
-RUN chmod +x /usr/local/bin/bun
+# 1. 拷贝时直接指定权限，彻底杜绝后续 RUN chmod 产生的层复制
+COPY --chmod=755 --from=bun-source /usr/local/bin/bun /usr/local/bin/bun
 
-# 3. 安装依赖工具与时区配置
+# 2. 将安装、时区配置、清理、目录创建与赋权全部合并进单个 Layer
 RUN apk add --no-cache \
-    bash \
-    curl \
-    jq \
-    ca-certificates \
-    libstdc++ \
-    tzdata \
+        bash \
+        curl \
+        jq \
+        ca-certificates \
+        libstdc++ \
+        tzdata \
     && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone \
-    && apk del tzdata
-
-# 4. 关键：提前把 node_modules 目录建好并把权限交给 webhook 用户
-RUN mkdir -p /app/node_modules && chown -R webhook:webhook /app
+    && apk del tzdata \
+    && mkdir -p /app/node_modules \
+    && chown -R webhook:webhook /app
 
 WORKDIR /app
 
-# 5. 切回 almir/webhook 的默认用户
 USER webhook
