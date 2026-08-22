@@ -21,8 +21,8 @@ RUN apk add --no-cache \
     && echo "Asia/Shanghai" > /etc/timezone \
     && apk del tzdata
 
-# 4. 创建工作区并把权限移交给 webhook 用户
-RUN mkdir -p /app && chown -R webhook:webhook /app
+# 4. 关键：提前把 node_modules 目录建好并把权限交给 webhook 用户
+RUN mkdir -p /app/node_modules && chown -R webhook:webhook /app
 
 WORKDIR /app
 
