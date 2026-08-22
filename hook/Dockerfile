@@ -2,10 +2,14 @@ FROM oven/bun:alpine AS bun-source
 
 FROM almir/webhook:latest
 
-# 1. 复制 Bun 运行时二进制
-COPY --from=bun-source /usr/local/bin/bun /usr/local/bin/bun
+# 1. 临时提权为 root 执行系统包安装
+USER root
 
-# 2. 安装核心工具，配置时区后清理 tzdata 数据库，避免携带冗余文件
+# 2. 拷贝 Bun 二进制并赋予所有用户可执行权限
+COPY --from=bun-source /usr/local/bin/bun /usr/local/bin/bun
+RUN chmod +x /usr/local/bin/bun
+
+# 3. 安装依赖工具与时区配置
 RUN apk add --no-cache \
     bash \
     curl \
@@ -16,4 +20,10 @@ RUN apk add --no-cache \
     && echo "Asia/Shanghai" > /etc/timezone \
     && apk del tzdata
 
+# 4. 创建工作区并把权限移交给 webhook 用户
+RUN mkdir -p /app && chown -R webhook:webhook /app
+
 WORKDIR /app
+
+# 5. 切回 almir/webhook 的默认用户
+USER webhook
